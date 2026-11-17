@@ -1,2 +1,10 @@
 .DS_Store
 .vscode/
+
+# Gradle·IDE 빌드 산출물
+.gradle/
+bin/
+build/
+
+# 제출용 PDF
+StockTrading2/*.pdf
