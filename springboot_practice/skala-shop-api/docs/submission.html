@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>SKALA-SHOP 과제 제출 문서</title>
+<style>
+  @page { size: A4; margin: 20mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    color: #1a1a1a;
+    line-height: 1.6;
+    font-size: 10.5pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  h1 { font-size: 19pt; margin: 0 0 4pt; }
+  h2 {
+    font-size: 13pt;
+    margin: 22pt 0 8pt;
+    padding-bottom: 4pt;
+    border-bottom: 1px solid #999;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11pt;
+    margin: 14pt 0 4pt;
+    page-break-after: avoid;
+  }
+  p { margin: 4pt 0; }
+  .cover {
+    text-align: center;
+    padding-top: 40mm;
+    page-break-after: always;
+  }
+  .cover .subtitle { font-size: 11pt; color: #555; margin-top: 6pt; }
+  .cover .meta {
+    margin-top: 40pt;
+    display: inline-block;
+    text-align: left;
+    font-size: 10.5pt;
+    border-top: 1px solid #ccc;
+    padding-top: 14pt;
+  }
+  .cover .meta div { margin: 3pt 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6pt 0 10pt;
+    font-size: 9.5pt;
+  }
+  th, td {
+    border: 1px solid #d0d0d0;
+    padding: 4pt 6pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #f0f0f0; font-weight: 600; }
+  code {
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+    background: #f0f0f0;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 9pt;
+  }
+  pre {
+    background: #222;
+    color: #e0e0e0;
+    padding: 8pt 10pt;
+    border-radius: 4px;
+    font-size: 8.3pt;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    page-break-inside: avoid;
+    margin: 6pt 0;
+  }
+  .method { font-weight: 700; font-family: monospace; font-size: 9pt; }
+  ul, ol { margin: 4pt 0; padding-left: 18pt; }
+  li { margin: 3pt 0; }
+  .point { margin: 10pt 0 14pt; page-break-inside: avoid; }
+  .point-title { font-weight: 700; }
+  .shot {
+    width: 100%;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    margin: 6pt 0;
+  }
+  .caption { font-size: 9pt; color: #666; margin: 2pt 0 0; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>SKALA-SHOP 온라인 쇼핑몰 API</h1>
+  <div class="subtitle">스칼라 온라인 쇼핑몰 API 실습 과제 제출 문서</div>
+  <div class="meta">
+    <div>프로젝트명 : skala-shop-api</div>
+    <div>작성일 : 2026-08-07</div>
+    <div>제출자 : G080_박상명</div>
+  </div>
+</div>
+
+<h2>1. 개요</h2>
+<p>
+상품(Product)·고객(Customer)·주문상품(OrderItem)을 관리하는 온라인 쇼핑몰 REST API를 Spring Boot,
+JPA/H2, Gradle로 구현했다. Controller–Service–Repository 계층형 구조를 따랐고, 스켈레톤 코드 없이
+처음부터 작성했다. JWT와 Docker는 과제 안내에 따라 적용하지 않았다.
+</p>
+
+<h2>2. 구현 내용</h2>
+<h3>2-1. 기능</h3>
+<ul>
+<li>고객 회원가입/로그인/로그아웃, 관리자 계정 분리</li>
+<li>상품 목록/상세 조회, 이름 검색, 등록/수정/삭제(관리자 전용)</li>
+<li>상품 주문 · 주문 취소 (포인트 차감/환급, 재고 차감/복원)</li>
+<li>포인트 변동 이력 조회</li>
+<li>필수값 검증, 전역 예외 처리</li>
+<li>주문/취소는 <code>@Transactional</code>로 원자적 처리</li>
+</ul>
+
+<h3>2-2. API 목록</h3>
+<table>
+<tr><th>Method</th><th>URI</th><th>설명</th></tr>
+<tr><td class="method">GET</td><td>/api/products</td><td>상품 목록 (검색/페이징)</td></tr>
+<tr><td class="method">GET</td><td>/api/products/{id}</td><td>상품 상세</td></tr>
+<tr><td class="method">POST</td><td>/api/products</td><td>상품 등록 (관리자)</td></tr>
+<tr><td class="method">PUT</td><td>/api/products</td><td>상품 수정 (관리자)</td></tr>
+<tr><td class="method">DELETE</td><td>/api/products</td><td>상품 삭제 (관리자)</td></tr>
+<tr><td class="method">GET</td><td>/api/customers</td><td>고객 목록</td></tr>
+<tr><td class="method">GET</td><td>/api/customers/{customerId}</td><td>고객 상세 + 주문 목록</td></tr>
+<tr><td class="method">GET</td><td>/api/customers/{customerId}/points</td><td>포인트 변동 이력</td></tr>
+<tr><td class="method">POST</td><td>/api/customers</td><td>회원가입</td></tr>
+<tr><td class="method">POST</td><td>/api/customers/login</td><td>로그인</td></tr>
+<tr><td class="method">POST</td><td>/api/customers/order</td><td>상품 주문 (로그인 필요)</td></tr>
+<tr><td class="method">POST</td><td>/api/customers/cancel</td><td>주문 취소 (로그인 필요)</td></tr>
+</table>
+
+<h2>3. 차별화 포인트</h2>
+
+<div class="point">
+<p class="point-title">1. 재고 관리</p>
+<p>상품에 재고(<code>productStock</code>)를 두어 주문 시 차감, 취소 시 복원하고 재고가 부족하면
+주문을 거부한다.</p>
+<img class="shot" src="screenshots/04-stock.png" alt="재고 부족 예외 화면">
+<p class="caption">재고 40개짜리 상품을 41개 주문 → OUT_OF_STOCK</p>
+</div>
+
+<div class="point">
+<p class="point-title">2. 동시성 제어 (낙관적 락 + 자동 재시도)</p>
+<p>재고·포인트에 JPA <code>@Version</code>을 적용해, 여러 요청이 동시에 같은 상품을 주문해도 재고보다
+많이 팔리지 않도록 했다. 충돌이 나면 자동으로 재시도한다.</p>
+<img class="shot" src="screenshots/05-concurrency.png" alt="동시 주문 테스트 결과">
+<p class="caption">재고 5개짜리 상품에 8명이 동시 주문 → 5건만 성공(OK), 3건은 OUT_OF_STOCK</p>
+</div>
+
+<div class="point">
+<p class="point-title">3. 관리자/고객 역할 분리</p>
+<p>고객에 역할(고객/관리자)을 두어 상품 등록·수정·삭제는 관리자만 할 수 있게 제한했다.</p>
+<img class="shot" src="screenshots/06-admin-role.png" alt="관리자 권한 테스트 결과">
+<p class="caption">관리자 계정은 상품 등록 성공, 일반 고객 계정은 FORBIDDEN(403)</p>
+</div>
+
+<div class="point">
+<p class="point-title">4. 포인트 변동 이력</p>
+<p>주문/취소/가입 시점의 포인트 증감을 이력으로 남겨 조회할 수 있게 했다.</p>
+<img class="shot" src="screenshots/07-point-history.png" alt="포인트 변동 이력 응답">
+<p class="caption">GET /api/customers/{customerId}/points 응답</p>
+</div>
+
+<div class="point">
+<p class="point-title">5. 세션 기반 로그인 (JWT 미사용)</p>
+<p>JWT 대신 서버가 발급한 세션 토큰을 쿠키로 내려주는 방식으로 로그인 인증을 구현했다.</p>
+<img class="shot" src="screenshots/08-session-cookie.png" alt="로그인 응답의 세션 쿠키">
+<p class="caption">로그인 응답 헤더의 Set-Cookie: shop-access=... (HttpOnly)</p>
+</div>
+
+<div class="point">
+<p class="point-title">6. 상품 검색</p>
+<p>상품 이름으로 검색할 수 있게 했다.</p>
+<img class="shot" src="screenshots/09-search.png" alt="상품 검색 결과 화면">
+<p class="caption">"키보드" 검색 결과</p>
+</div>
+
+<div class="point">
+<p class="point-title">7. AOP 로깅 &amp; Actuator 커스텀 지표</p>
+<p>AOP로 API 호출 로그를 남기고, Actuator에 주문 건수·매출 등 커스텀 지표를 추가했다.</p>
+<img class="shot" src="screenshots/10-aop-log.png" alt="AOP 로그 화면">
+<p class="caption">서버 콘솔에 찍힌 API 처리 로그 (ApiLogAspect)</p>
+<img class="shot" src="screenshots/11-actuator-metric.png" alt="Actuator 커스텀 지표 응답">
+<p class="caption">GET /actuator/metrics/shop.orders.count 응답</p>
+</div>
+
+<div class="point">
+<p class="point-title">8. Swagger UI</p>
+<p>springdoc-openapi로 API 문서를 자동 생성했다.</p>
+<img class="shot" src="screenshots/02-swagger.png" alt="Swagger UI 화면">
+<p class="caption">/swagger-ui/index.html</p>
+</div>
+
+<div class="point">
+<p class="point-title">9. 프론트엔드</p>
+<p>HTML/CSS/JS로 회원가입·로그인·상품 목록·주문·취소·마이페이지 화면을 구현했다.</p>
+<img class="shot" src="screenshots/01-storefront.png" alt="상품 목록 화면">
+<p class="caption">상품 목록 (비로그인)</p>
+<img class="shot" src="screenshots/03-mypage.png" alt="마이페이지 화면">
+<p class="caption">로그인 후 마이페이지</p>
+</div>
+
+<div class="point">
+<p class="point-title">10. 자동화 테스트</p>
+<p>회원가입~주문~취소 흐름과 동시 주문 시나리오를 JUnit 테스트로 작성했다.</p>
+<img class="shot" src="screenshots/12-test-result.png" alt="테스트 실행 결과">
+<p class="caption">./gradlew test 실행 결과 (BUILD SUCCESSFUL)</p>
+</div>
+
+<h2>4. 실행 방법</h2>
+<pre>./gradlew bootRun
+# http://localhost:8080/
+
+./gradlew test</pre>
+<p>기동 시 관리자 계정(admin / admin1234)이 자동 생성되며, 상품 등록·수정·삭제는 이 계정으로 로그인해야 한다.</p>
+
+</body>
+</html>

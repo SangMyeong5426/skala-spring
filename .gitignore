@@ -8,3 +8,15 @@ build/
 
 # 제출용 PDF
 StockTrading2/*.pdf
+
+# curl 쿠키 파일(세션 값이 들어 있음)과 Postman 로컬 설정
+springboot_practice/*.txt
+springboot_practice/.postman/
+springboot_practice/postman/
+
+# 제출용 압축본·PDF
+*.zip
+springboot_practice/**/*.pdf
+
+# 제출용으로 복사해 둔 폴더(skala-shop-api 와 내용이 같음)
+springboot_practice/G080_*/
