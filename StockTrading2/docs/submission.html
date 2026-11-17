@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>StockTrading2 과제 제출 문서</title>
+<style>
+  @page { size: A4; margin: 20mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    color: #1a1a1a;
+    line-height: 1.55;
+    font-size: 10.5pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  h1 { font-size: 20pt; margin: 0 0 4pt; }
+  h2 {
+    font-size: 13pt;
+    margin: 22pt 0 8pt;
+    padding-bottom: 4pt;
+    border-bottom: 2px solid #2c3e50;
+    color: #2c3e50;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11pt;
+    margin: 14pt 0 6pt;
+    color: #34495e;
+    page-break-after: avoid;
+  }
+  p { margin: 4pt 0; }
+  .cover {
+    text-align: center;
+    padding-top: 30mm;
+    page-break-after: always;
+  }
+  .cover .subtitle { font-size: 12pt; color: #555; margin-top: 6pt; }
+  .cover .meta {
+    margin-top: 40pt;
+    display: inline-block;
+    text-align: left;
+    font-size: 10.5pt;
+    border-top: 1px solid #ccc;
+    padding-top: 14pt;
+  }
+  .cover .meta div { margin: 3pt 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6pt 0 10pt;
+    font-size: 9.5pt;
+  }
+  th, td {
+    border: 1px solid #d0d0d0;
+    padding: 4pt 6pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #2c3e50; color: #fff; font-weight: 600; }
+  tr:nth-child(even) td:not(.badge) { background: #f7f8fa; }
+  code {
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+    background: #eef0f2;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 9pt;
+  }
+  pre {
+    background: #1e2530;
+    color: #d7dde5;
+    padding: 8pt 10pt;
+    border-radius: 4px;
+    font-size: 8.3pt;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    page-break-inside: avoid;
+    margin: 6pt 0;
+  }
+  .method { font-weight: 700; font-family: monospace; font-size: 9pt; }
+  .m-get { color: #1565c0; }
+  .m-post { color: #2e7d32; }
+  .m-put { color: #ef6c00; }
+  .m-delete { color: #c62828; }
+  .badge {
+    display: inline-block;
+    background: #2e7d32;
+    color: #fff;
+    border-radius: 3px;
+    padding: 0 6pt;
+    font-size: 9pt;
+  }
+  .section { page-break-inside: avoid; }
+  .diagram {
+    background: #f7f8fa;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    padding: 10pt;
+    font-family: monospace;
+    font-size: 9pt;
+    white-space: pre;
+    margin: 6pt 0;
+  }
+  .note {
+    background: #fff8e1;
+    border-left: 3px solid #f9a825;
+    padding: 6pt 10pt;
+    font-size: 9.5pt;
+    margin: 8pt 0;
+  }
+  ul, ol { margin: 4pt 0; padding-left: 18pt; }
+  li { margin: 2pt 0; }
+  .footer-note { font-size: 8.5pt; color: #888; margin-top: 20pt; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>주식 거래 시스템 (StockTrading2)</h1>
+  <div class="subtitle">JPA &amp; MyBatis 병행 적용 / 매매·분석 기능 / AOP / Actuator 과제 제출 문서</div>
+  <div class="meta">
+    <div>프로젝트명 : skala3-stock-trading-day3 (StockTrading2)</div>
+    <div>기술 스택 : Spring Boot 3.2.0, Java 21, JPA(Hibernate) + MyBatis 3.0.3, H2</div>
+    <div>작성일 : 2026-08-06</div>
+    <div>제출자 : ________________________</div>
+  </div>
+</div>
+
+<h2>1. 프로젝트 개요</h2>
+<p>
+기존에 제공된 실습용 스캐폴드(사용자/주식/거래/포트폴리오 CRUD 일부 및 매매·분석 로직이 비어있는 상태)를 기반으로,
+과제 요구사항에 명시된 CRUD 공백을 채우고 매매 실행 로직·분석 기능 8종을 구현했다.
+데이터 접근은 JPA와 MyBatis를 병행 적용했으며, 거래 처리 과정에는 AOP를 적용해 감사 로그(Trade Audit Log)를 남기고,
+Spring Boot Actuator로 헬스체크/애플리케이션 정보를 노출했다.
+</p>
+
+<h2>2. 기술 스택</h2>
+<table>
+<tr><th>구분</th><th>내용</th></tr>
+<tr><td>Language</td><td>Java 21</td></tr>
+<tr><td>Framework</td><td>Spring Boot 3.2.0</td></tr>
+<tr><td>ORM</td><td>Spring Data JPA (Hibernate)</td></tr>
+<tr><td>SQL Mapper</td><td>MyBatis 3.0.3 (mybatis-spring-boot-starter)</td></tr>
+<tr><td>Database</td><td>H2 (in-memory, <code>jdbc:h2:mem:stockdb</code>)</td></tr>
+<tr><td>AOP</td><td>spring-boot-starter-aop</td></tr>
+<tr><td>Monitoring</td><td>spring-boot-starter-actuator</td></tr>
+<tr><td>API 문서화</td><td>springdoc-openapi (Swagger UI)</td></tr>
+<tr><td>빌드 도구</td><td>Gradle</td></tr>
+</table>
+
+<h2>3. 요구사항 대비 구현 내역</h2>
+
+<h3>3-1. 기본 CRUD 보완</h3>
+<table>
+<tr><th>요구사항</th><th>구현</th><th>API</th></tr>
+<tr><td>User DELETE (삭제)</td><td class="badge">완료</td><td><span class="method m-delete">DELETE</span> /api/users/{id}</td></tr>
+<tr><td>User GET 전체 조회</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/users</td></tr>
+<tr><td>Stock PUT (수정)</td><td class="badge">완료</td><td><span class="method m-put">PUT</span> /api/stocks/{id}</td></tr>
+<tr><td>Stock DELETE (삭제)</td><td class="badge">완료</td><td><span class="method m-delete">DELETE</span> /api/stocks/{id}</td></tr>
+<tr><td>Stock GET by Code (코드로 조회)</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/stocks/code/{code}</td></tr>
+<tr><td>Transaction GET by ID (거래 상세 조회, Read-Only)</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/transactions/{id}</td></tr>
+<tr><td>Transaction POST /trade (주식 매매 실행)</td><td class="badge">완료</td><td><span class="method m-post">POST</span> /api/transactions/trade</td></tr>
+<tr><td>Portfolio GET 특정 주식</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/portfolios/user/{userId}/stock/{stockId}</td></tr>
+</table>
+
+<h3>3-2. 분석/고급 기능 (5개 이상 요구 → 8개 전체 구현)</h3>
+<table>
+<tr><th>#</th><th>요구사항</th><th>구현</th><th>API</th><th>처리 방식</th></tr>
+<tr><td>1</td><td>포트폴리오 평가 손익 조회</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/analysis/portfolio/{userId}/profit-loss</td><td>JPA</td></tr>
+<tr><td>2</td><td>거래 내역 상세 조회</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/analysis/transactions/{id}</td><td>JPA</td></tr>
+<tr><td>3</td><td>특정 주식 거래 내역 조회 (전체 사용자)</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/analysis/transactions/stock/{stockId}</td><td>JPA</td></tr>
+<tr><td>4</td><td>총 자산 조회</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/analysis/assets/{userId}</td><td>MyBatis</td></tr>
+<tr><td>5</td><td>총 수익률 조회</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/analysis/return-rate/{userId}</td><td>MyBatis</td></tr>
+<tr><td>6</td><td>거래 통계 조회</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/analysis/statistics/{userId}</td><td>MyBatis</td></tr>
+<tr><td>7</td><td>일별 거래 내역 조회</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/analysis/transactions/{userId}/daily</td><td>MyBatis</td></tr>
+<tr><td>8</td><td>Transaction 특정 주식 거래 내역 조회 (사용자별)</td><td class="badge">완료</td><td><span class="method m-get">GET</span> /api/transactions/user/{userId}/stock/{stockId}</td><td>JPA</td></tr>
+</table>
+
+<h3>3-3. 기능 추가</h3>
+<table>
+<tr><th>요구사항</th><th>구현</th><th>내용</th></tr>
+<tr><td>Actuator 적용</td><td class="badge">완료</td><td>health / info / metrics 엔드포인트 노출</td></tr>
+<tr><td>AOP 적용</td><td class="badge">완료</td><td><code>TradeAuditAspect</code> - 매매 실행 시 감사 로그 자동 기록</td></tr>
+</table>
+
+<h2>4. ERD / 엔티티 구조</h2>
+<div class="diagram">
+User (1) ──────< Portfolio >────── (1) Stock
+  │  id, username, password,          │  id, code, name,
+  │  email, balance                   │  currentPrice, previousPrice
+  │                                   │
+  └──────< Transaction >──────────────┘
+        id, type(BUY/SELL), quantity,
+        price, totalAmount, transactionDate
+
+TradeAuditLog (독립 테이블 - AOP 감사 로그 전용)
+  id, userId, stockId, type, message,
+  totalAssets, totalReturnRate, createdAt
+</div>
+<ul>
+  <li><b>User – Portfolio</b>: 1:N (한 사용자가 여러 종목 보유)</li>
+  <li><b>Stock – Portfolio</b>: 1:N (한 종목을 여러 사용자가 보유)</li>
+  <li><b>User – Transaction</b>: 1:N, <b>Stock – Transaction</b>: 1:N</li>
+  <li><b>TradeAuditLog</b>: 다른 엔티티와 FK 연관관계를 맺지 않고 userId/stockId를 단순 컬럼으로 보관 (감사 로그는 트랜잭션 롤백과 무관하게 독립적으로 남아야 하므로 연관관계 대신 값으로만 참조)</li>
+</ul>
+
+<h2>5. API 명세 (총 22개 엔드포인트)</h2>
+
+<h3>5-1. User <code>/api/users</code></h3>
+<table>
+<tr><th>Method</th><th>URL</th><th>설명</th></tr>
+<tr><td class="method m-post">POST</td><td>/api/users</td><td>사용자 생성</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/users/{id}</td><td>사용자 단건 조회</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/users</td><td>사용자 전체 조회</td></tr>
+<tr><td class="method m-delete">DELETE</td><td>/api/users/{id}</td><td>사용자 삭제</td></tr>
+</table>
+
+<h3>5-2. Stock <code>/api/stocks</code></h3>
+<table>
+<tr><th>Method</th><th>URL</th><th>설명</th></tr>
+<tr><td class="method m-post">POST</td><td>/api/stocks</td><td>주식 생성</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/stocks/{id}</td><td>주식 단건 조회 (ID)</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/stocks</td><td>주식 전체 조회</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/stocks/code/{code}</td><td>주식 조회 (종목 코드)</td></tr>
+<tr><td class="method m-put">PUT</td><td>/api/stocks/{id}</td><td>주식 수정</td></tr>
+<tr><td class="method m-delete">DELETE</td><td>/api/stocks/{id}</td><td>주식 삭제</td></tr>
+</table>
+
+<h3>5-3. Transaction <code>/api/transactions</code></h3>
+<table>
+<tr><th>Method</th><th>URL</th><th>설명</th></tr>
+<tr><td class="method m-post">POST</td><td>/api/transactions/trade</td><td>주식 매매 실행 (BUY/SELL)</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/transactions/{id}</td><td>거래 상세 조회 (Read-Only)</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/transactions/user/{userId}</td><td>사용자 전체 거래 내역 조회</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/transactions/user/{userId}/stock/{stockId}</td><td>사용자·종목별 거래 내역 조회</td></tr>
+</table>
+
+<h3>5-4. Portfolio <code>/api/portfolios</code></h3>
+<table>
+<tr><th>Method</th><th>URL</th><th>설명</th></tr>
+<tr><td class="method m-get">GET</td><td>/api/portfolios/user/{userId}</td><td>사용자 전체 포트폴리오 조회</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/portfolios/user/{userId}/stock/{stockId}</td><td>특정 종목 포트폴리오 조회</td></tr>
+</table>
+
+<h3>5-5. Analysis <code>/api/analysis</code></h3>
+<table>
+<tr><th>Method</th><th>URL</th><th>설명</th></tr>
+<tr><td class="method m-get">GET</td><td>/api/analysis/portfolio/{userId}/profit-loss</td><td>포트폴리오 평가 손익 조회</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/analysis/transactions/{id}</td><td>거래 내역 상세 조회</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/analysis/transactions/stock/{stockId}</td><td>특정 주식 거래 내역 조회 (전체 사용자)</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/analysis/assets/{userId}</td><td>총 자산 조회</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/analysis/return-rate/{userId}</td><td>총 수익률 조회</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/analysis/statistics/{userId}</td><td>거래 통계 조회 (종목별 매수/매도 집계)</td></tr>
+<tr><td class="method m-get">GET</td><td>/api/analysis/transactions/{userId}/daily</td><td>일별 거래 내역 조회</td></tr>
+</table>
+
+<h2>6. JPA / MyBatis 병행 적용 기준</h2>
+<p>단건 조회·CRUD·트랜잭션성 로직은 JPA(영속성 컨텍스트, 더티체킹)로 처리하고,
+여러 테이블을 조인·집계해야 하는 통계성 조회는 SQL을 직접 다루기 쉬운 MyBatis로 분리했다.</p>
+<table>
+<tr><th>영역</th><th>기술</th><th>이유</th></tr>
+<tr><td>User/Stock/Portfolio/Transaction CRUD</td><td>JPA</td><td>단건 엔티티 중심 조작, 변경 감지를 통한 자동 반영</td></tr>
+<tr><td>매매 실행 (executeTrade)</td><td>JPA</td><td>User/Stock/Portfolio 상태를 하나의 트랜잭션에서 함께 변경해야 하므로 영속성 컨텍스트 활용이 유리</td></tr>
+<tr><td>포트폴리오 평가손익 / 종목별 거래내역(전체)</td><td>JPA</td><td>기존 연관관계(Portfolio↔Stock, Transaction↔User/Stock)를 그대로 조회·매핑</td></tr>
+<tr><td>총자산 · 총수익률 · 거래통계 · 일별거래내역</td><td>MyBatis</td><td>SUM/CASE/GROUP BY 등 복잡한 집계 SQL을 직접 작성하는 것이 JPQL보다 명확하고 성능상 유리</td></tr>
+</table>
+<p>MyBatis 매퍼는 <code>StockMapper</code> 인터페이스 + <code>StockMapper.xml</code>로 구성했으며,
+<code>mybatis.configuration.map-underscore-to-camel-case: true</code> 설정으로 스네이크케이스 컬럼을 DTO 필드에 자동 매핑했다.</p>
+
+<h2>7. AOP 적용 내용</h2>
+<p>
+매매 처리(<code>TransactionService.executeTrade</code>)를 <code>TradeAuditAspect</code>의 <code>@Around</code> 어드바이스로 감싸
+실행 시간을 측정하고 성공/실패 여부를 로깅한 뒤, 결과와 무관하게 <code>TradeAuditLog</code> 테이블에 감사 기록을 남기도록 구현했다.
+실제 저장은 <code>TradeAuditLogService</code>에서 <code>@Transactional(propagation = Propagation.REQUIRES_NEW)</code>로 처리하여,
+매매 트랜잭션이 롤백되더라도(예: 잔고 부족) 감사 로그는 별도 트랜잭션으로 독립적으로 커밋되도록 했다.
+</p>
+<table>
+<tr><th>구성 요소</th><th>내용</th></tr>
+<tr><td>Pointcut</td><td><code>execution(* com.skala.stock.service.TransactionService.executeTrade(..))</code></td></tr>
+<tr><td>Advice</td><td><code>@Around</code> - 실행시간 측정 + 성공/실패 로깅 + 감사로그 위임</td></tr>
+<tr><td>감사로그 저장</td><td><code>TradeAuditLogService.recordSuccess/recordFailure</code> (REQUIRES_NEW)</td></tr>
+<tr><td>성공 시 기록</td><td>메시지 + MyBatis로 재계산한 총자산/총수익률 스냅샷 저장</td></tr>
+<tr><td>실패 시 기록</td><td>실패 사유 메시지 저장 (자산 정보는 변동 없으므로 생략)</td></tr>
+</table>
+<p>실제 실행 테스트 시 남은 로그:</p>
+<pre>[거래 성공] userId=3, stockId=4, type=BUY, quantity=2, 15ms
+[거래 성공] userId=3, stockId=4, type=SELL, quantity=1, 2ms
+[거래 실패] userId=3, stockId=7, type=BUY, quantity=1000, 0ms,
+           reason=잔고가 부족합니다. 필요 금액: 800000000, 보유 잔고: 2950000</pre>
+
+<h2>8. Actuator 적용 내용</h2>
+<p><code>application.yml</code> 설정:</p>
+<pre>management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: &#36;{spring.application.name}
+    description: JPA + MyBatis 기반 주식 거래 API</pre>
+<p>실제 응답 확인 (<code>GET /actuator/health</code>, <code>GET /actuator/info</code>):</p>
+<pre>{"status":"UP","components":{"db":{"status":"UP","details":{"database":"H2",
+"validationQuery":"isValid()"}},"diskSpace":{"status":"UP", ... },"ping":{"status":"UP"}}}
+
+{"app":{"name":"skala3-stock-trading-day3","description":"JPA + MyBatis 기반 주식 거래 API"}}</pre>
+
+<h2>9. 실행 방법</h2>
+<ol>
+  <li>애플리케이션 실행: <code>./gradlew bootRun</code></li>
+  <li>Swagger UI: <code>http://localhost:8080/swagger-ui.html</code></li>
+  <li>H2 Console: <code>http://localhost:8080/h2-console</code> (JDBC URL: <code>jdbc:h2:mem:stockdb</code>, User: <code>sa</code>, Password: 없음)</li>
+  <li>Actuator: <code>http://localhost:8080/actuator/health</code></li>
+  <li>초기 데이터: <code>data.sql</code>을 통해 사용자 3명, 주식 11종, 샘플 포트폴리오·거래내역 자동 적재</li>
+</ol>
+
+<h2>10. 테스트 결과 (실제 API 호출 검증)</h2>
+
+<h3>10-1. 매매 실행 (BUY → SELL → 잔고부족 실패)</h3>
+<pre>POST /api/transactions/trade  {"userId":3,"stockId":4,"type":"BUY","quantity":2}
+→ {"id":5,"userId":3,"username":"user3","stockId":4,"stockCode":"035720","stockName":"카카오",
+   "type":"BUY","quantity":2,"price":50000,"totalAmount":100000, ...}
+
+POST /api/transactions/trade  {"userId":3,"stockId":4,"type":"SELL","quantity":1}
+→ {"id":6, ... "type":"SELL","quantity":1,"price":50000,"totalAmount":50000, ...}
+
+POST /api/transactions/trade  {"userId":3,"stockId":7,"type":"BUY","quantity":1000}
+→ HTTP 500  (잔고 부족으로 예외 발생, AOP가 실패 로그를 정상적으로 남김)
+
+GET /api/users/3
+→ {"id":3,"username":"user3", ... ,"balance":2950000}
+   (3,000,000 - 100,000 + 50,000 = 2,950,000 → 매매 후 잔고 정합성 확인됨)</pre>
+
+<h3>10-2. 분석 기능 (JPA / MyBatis)</h3>
+<pre>GET /api/analysis/portfolio/1/profit-loss   (JPA)
+→ {"userId":1,"holdings":[...],"totalInvestment":366000,"totalValue":380000,"totalProfitLoss":14000}
+
+GET /api/analysis/assets/1                  (MyBatis)
+→ {"userId":1,"totalAssets":1016000,"totalReturnRate":3.8251366120218577}
+
+GET /api/analysis/statistics/1              (MyBatis)
+→ [{"stockCode":"000660","stockName":"SK하이닉스","totalBuyQuantity":2,"totalSellQuantity":0,
+    "netQuantity":2,"totalBuyAmount":230000,"totalSellAmount":0,"netAmount":230000}, ...]
+
+GET /api/analysis/transactions/1/daily      (MyBatis)
+→ [{"tradeDate":"2026-08-05","buyCount":0,"sellCount":1,"buyAmount":0,
+    "sellAmount":70000,"totalAmount":70000}, ...]</pre>
+
+<h3>10-3. 검증 결과 요약</h3>
+<table>
+<tr><th>검증 항목</th><th>결과</th></tr>
+<tr><td><code>./gradlew compileJava</code></td><td>성공 (오류 없음)</td></tr>
+<tr><td>애플리케이션 기동</td><td>성공, H2 스키마/초기데이터 정상 적재</td></tr>
+<tr><td>매매 실행 시나리오 (BUY/SELL/실패)</td><td>모두 예상대로 동작, 잔고·포트폴리오 정합성 확인</td></tr>
+<tr><td>AOP 감사 로그</td><td>성공/실패 케이스 모두 로그 기록 확인</td></tr>
+<tr><td>분석 API 7종 (JPA + MyBatis)</td><td>응답 수치 직접 검산하여 일치 확인</td></tr>
+<tr><td>Actuator health/info</td><td>정상 응답 확인</td></tr>
+</table>
+
+<h2>11. 특이사항</h2>
+<p>
+기존 스캐폴드는 교육생 실습을 위해 매매 실행, 포트폴리오 갱신, 분석 컨트롤러/서비스/매퍼가 의도적으로 비어 있는 상태였다.
+특히 <code>TradeAuditLog</code> 엔티티는 사용되지 않은 채 "REQUIRES_NEW 트랜잭션 예제"라는 주석과 함께 미리 준비되어 있었는데,
+이는 AOP + 트랜잭션 전파 실습을 염두에 둔 설계로 판단하여 AOP 적용 대상으로 그대로 활용했다.
+</p>
+
+<div class="footer-note">본 문서는 실제 코드 실행 결과를 바탕으로 작성되었다.</div>
+
+</body>
+</html>
